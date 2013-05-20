@@ -4902,7 +4902,6 @@ static struct cpufreq_frequency_table freq_table_1p7GHz[] = {
 #endif
 #else
 	{ 5,  620000 },
-
 #endif
 	{ 6,  760000 },
 	{ 7,  910000 },
