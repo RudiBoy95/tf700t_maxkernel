@@ -51,10 +51,11 @@
 #define SYSTEM_NORMAL_MODE	(0)
 #define SYSTEM_BALANCE_MODE	(1)
 #define SYSTEM_PWRSAVE_MODE	(2)
-#define SYSTEM_OVERCLOCK_0P1G_MODE (4)
+#define SYSTEM_OVERCLOCK_0P1G_MODE (3)
 #define SYSTEM_MODE_END 		(SYSTEM_OVERCLOCK_0P1G_MODE + 1)
 #define SYSTEM_PWRSAVE_MODE_MAX_FREQ	(1000000)
 #define ASUS_OVERCLOCK
+
 unsigned int power_mode_table[SYSTEM_MODE_END] = {1000000,1200000,1400000,1500000};
 
 #define CAMERA_ENABLE_EMC_MINMIAM_RATE (667000000)
@@ -258,7 +259,7 @@ static int system_mode_set(const char *arg, const struct kernel_param *kp)
 	if (ret == 0) {
 		printk("system_mode_set system_mode=%u\n",system_mode);
 #ifdef ASUS_OVERCLOCK
-		if( (system_mode < SYSTEM_NORMAL_MODE) || (system_mode > SYSTEM_OVERCLOCK_0P1G_MODE))
+		if( (system_mode<SYSTEM_NORMAL_MODE) || (system_mode>SYSTEM_OVERCLOCK_0P1G_MODE))
 			system_mode=SYSTEM_NORMAL_MODE;
 #else
 
@@ -338,9 +339,8 @@ module_param_cb(enable_pwr_save, &tegra_pwr_save_ops, &pwr_save, 0644);
 	else  if((system_mode == SYSTEM_NORMAL_MODE) && (requested_speed > power_mode_table[SYSTEM_NORMAL_MODE]))
 		new_speed = power_mode_table[SYSTEM_NORMAL_MODE];
 #ifdef ASUS_OVERCLOCK
-	else if(( system_mode == SYSTEM_OVERCLOCK_0P1G_MODE ) &&
-(requested_speed > power_mode_table[SYSTEM_OVERCLOCK_0P1G_MODE]))
-		new_speed = power_mode_table[SYSTEM_OVERCLOCK_0P1G_MODE];
+        else  if( (system_mode== SYSTEM_OVERCLOCK_0P1G_MODE ) && ( requested_speed > power_mode_table[SYSTEM_OVERCLOCK_0P1G_MODE] ))
+		new_speed=power_mode_table[SYSTEM_OVERCLOCK_0P1G_MODE] ;
 #endif
 	return new_speed;
 }
