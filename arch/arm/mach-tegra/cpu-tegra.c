@@ -55,6 +55,8 @@
 #define SYSTEM_MODE_END 		(SYSTEM_OVERCLOCK_0P1G_MODE + 1)
 #define SYSTEM_PWRSAVE_MODE_MAX_FREQ	(1000000)
 #define ASUS_OVERCLOCK
+#define TEGRA3_DYNAMIC_EDP_THRES_TEMP (60)
+static bool edp_enable = 1;
 
 unsigned int power_mode_table[SYSTEM_MODE_END] = {1000000,1200000,1400000,1500000};
 
@@ -66,7 +68,7 @@ static unsigned int freq_table_size=0;;
 static struct clk *cpu_clk;
 static struct clk *emc_clk;
 
-static bool edp_enable = 0;
+
 static unsigned long policy_max_speed[CONFIG_NR_CPUS];
 static unsigned long target_cpu_speed[CONFIG_NR_CPUS];
 static DEFINE_MUTEX(tegra_cpu_lock);
@@ -484,10 +486,12 @@ int tegra_edp_update_thermal_zone(int temperature)
 	int nlimits = cpu_edp_limits_size;
 	int index;
 #ifdef ASUS_OVERCLOCK
-	if(temperature >= 75 && temperature < 85) {
-		edp_enable=1;
+	if(temperature >= TEGRA3_DYNAMIC_EDP_THRES_TEMP) {
+		edp_enable = 1;
+		pr_info("%s: Dynamic EDP enabled, temp: %u\n", __func__, temperature);
 	} else {
 		edp_enable = 0;
+		pr_info("%s: Dynamic EDP disabled, temp: %u\n", __func__, temperature);
 	}
 #endif
 	if (!cpu_edp_limits)
@@ -594,7 +598,16 @@ static int tegra_cpu_edp_notify(
 		edp_update_limit();
 
 		cpu_speed = tegra_getspeed(0);
+
+#ifdef ASUS_OVERCLOCK
+		if(edp_enable) {
+			new_speed = edp_governor_speed(new_speed);
+		} else {
+			new_speed = cpu_speed;
+		}
+#else
 		new_speed = edp_governor_speed(cpu_speed);
+#endif
 		if (new_speed < cpu_speed) {
 			ret = tegra_cpu_set_speed_cap(NULL);
 			if (ret) {
@@ -918,7 +931,7 @@ int tegra_cpu_set_speed_cap(unsigned int *speed_cap)
 #ifdef ASUS_OVERCLOCK
 	if(system_mode == SYSTEM_OVERCLOCK_0P1G_MODE ) {
 		if(edp_enable) {
-			pr_info("%s : EDP enable\n", __func__);
+			pr_info("%s : Dynamic EDP is enabled\n", __func__);
 			new_speed = edp_governor_speed(new_speed);
 		}
 	} else {
@@ -927,7 +940,7 @@ int tegra_cpu_set_speed_cap(unsigned int *speed_cap)
 #else
 	new_speed = edp_governor_speed(new_speed);
 #endif
-	//new_speed = user_cap_speed(new_speed);
+	new_speed = user_cap_speed(new_speed);
 	if (speed_cap)
 		*speed_cap = new_speed;
 

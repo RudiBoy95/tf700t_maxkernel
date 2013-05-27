@@ -844,12 +844,16 @@ static int tegra3_cpu_clk_set_rate(struct clk *c, unsigned long rate)
 	bool skip_to_backup =
 		skip && (clk_get_rate_all_locked(c) >= SKIPPER_ENGAGE_RATE);
 
+	/* Hardware clock control is not possible on FPGA platforms.
+	   Report success so that upper level layers don't complain
+	   needlessly. */
+#ifndef CONFIG_TEGRA_FPGA_PLATFORM
 	if (c->dvfs) {
 		if (!c->dvfs->dvfs_rail)
 			return -ENOSYS;
 		else if ((!c->dvfs->dvfs_rail->reg) &&
 			  (clk_get_rate_locked(c) < rate)) {
-			WARN(1, "Increasing CPU rate while regulator is not"
+			pr_debug("Increasing CPU rate while regulator is not"
 				" ready may overclock CPU\n");
 			return -ENOSYS;
 		}
@@ -922,6 +926,7 @@ out:
 		tegra3_super_clk_skipper_update(c->parent, 2, 1);
 	}
 	clk_disable(c->u.cpu.main);
+#endif
 	return ret;
 }
 
@@ -3062,11 +3067,11 @@ static noinline int shared_bus_set_rate(struct clk *bus, unsigned long rate,
 
 	mv = tegra_dvfs_predict_millivolts(bus, rate);
 	old_mv = tegra_dvfs_predict_millivolts(bus, old_rate);
-	if (IS_ERR_VALUE(mv) || IS_ERR_VALUE(old_mv)) {
-		pr_err("%s: Failed to predict %s voltage for %lu => %lu\n",
-		       __func__, bus->name, old_rate, rate);
-		return -EINVAL;
-	}
+//	if (IS_ERR_VALUE(mv) || IS_ERR_VALUE(old_mv)) {
+//		pr_err("%s: Failed to predict %s voltage for %lu => %lu\n",
+//		       __func__, bus->name, old_rate, rate);
+//		return -EINVAL;
+//	}
 
 	/* emc bus: set bridge rate as intermediate step when crossing
 	 * bridge threshold in any direction

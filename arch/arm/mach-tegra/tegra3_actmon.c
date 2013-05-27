@@ -532,7 +532,7 @@ static struct actmon_dev actmon_dev_avp = {
 	.boost_freq_step	= 8000,
 	.boost_up_coef		= 200,
 	.boost_down_coef	= 50,
-	.boost_up_threshold	= 40,
+	.boost_up_threshold	= 75, //original 40
 	.boost_down_threshold	= 25,
 
 	.up_wmark_window	= 1,
