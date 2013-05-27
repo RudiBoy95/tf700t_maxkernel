@@ -398,12 +398,12 @@ static struct kernel_param_ops cap_ops = {
 };
 module_param_cb(cpu_user_cap, &cap_ops, &cpu_user_cap, 0644);
 
-/*static unsigned int user_cap_speed(unsigned int requested_speed)
+static unsigned int user_cap_speed(unsigned int requested_speed)
 {
 	if ((cpu_user_cap) && (requested_speed > cpu_user_cap))
 		return cpu_user_cap;
 	return requested_speed;
-}*/
+}
 
 #ifdef CONFIG_TEGRA_THERMAL_THROTTLE
 
@@ -695,6 +695,8 @@ module_param_cb(pwr_cap_limit_4, &pwr_cap_ops, &pwr_cap_limits[3], 0644);
 #ifdef CONFIG_DEBUG_FS
 static int pwr_mode_table_debugfs_show(struct seq_file *s, void *data)
 {
+	int i;
+
 	seq_printf(s, "-- CPU power mode table --\n");
 	seq_printf(s, "Power Saving=%u \n Balanced=%u \n Normal=%u \n Over 1=%u \n \n",
 			   power_mode_table[2],

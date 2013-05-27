@@ -318,6 +318,21 @@ static void arm_memory_present(void)
 }
 #endif
 
+static bool arm_memblock_steal_permitted = true;
+
+phys_addr_t __init arm_memblock_steal(phys_addr_t size, phys_addr_t align)
+{
+	phys_addr_t phys;
+
+	BUG_ON(!arm_memblock_steal_permitted);
+
+	phys = memblock_alloc_base(size, align, MEMBLOCK_ALLOC_ANYWHERE);
+	memblock_free(phys, size);
+	memblock_remove(phys, size);
+
+	return phys;
+}
+
 static int __init meminfo_cmp(const void *_a, const void *_b)
 {
 	const struct membank *a = _a, *b = _b;
