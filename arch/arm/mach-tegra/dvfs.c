@@ -374,26 +374,16 @@ __tegra_dvfs_set_rate(struct dvfs *d, unsigned long rate)
 	return ret;
 }
 
-static inline int dvfs_alt_freqs_set(struct dvfs *d, bool enable)
+int tegra_dvfs_alt_freqs_set(struct dvfs *d, unsigned long *alt_freqs)
 {
-	if (d->alt_freqs_state == ALT_FREQS_NOT_SUPPORTED)
-		return -ENOSYS;
-
-	d->alt_freqs_state = enable ? ALT_FREQS_ENABLED : ALT_FREQS_DISABLED;
-	return 0;
-}
-
-int tegra_dvfs_alt_freqs_set(struct dvfs *d, bool enable)
-{
-	int ret;
-	enum dvfs_alt_freqs old_state;
+	int ret = 0;
 
 	mutex_lock(&dvfs_lock);
 
-	old_state = d->alt_freqs_state;
-	ret = dvfs_alt_freqs_set(d, enable);
-	if (!ret && (old_state != d->alt_freqs_state))
+	if (d->alt_freqs != alt_freqs) {
+		d->alt_freqs = alt_freqs;
 		ret = __tegra_dvfs_set_rate(d, d->cur_rate);
+	}
 
 	mutex_unlock(&dvfs_lock);
 	return ret;
@@ -699,8 +689,12 @@ int __init tegra_dvfs_late_init(void)
 {
 	bool connected = true;
 	struct dvfs_rail *rail;
+	int cur_linear_age = tegra_get_linear_age();
 
 	mutex_lock(&dvfs_lock);
+
+	if (cur_linear_age >= 0)
+		tegra_dvfs_age_cpu(cur_linear_age);
 
 	list_for_each_entry(rail, &dvfs_rail_list, node)
 		if (dvfs_rail_connect_to_regulator(rail))
