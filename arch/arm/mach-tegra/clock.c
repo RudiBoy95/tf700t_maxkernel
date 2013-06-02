@@ -345,15 +345,12 @@ int clk_set_parent_locked(struct clk *c, struct clk *parent)
 
 	if (new_rate > clk_get_max_rate(c)) {
 
-/* If i.e host1x rate is not set as high as the parent pll (pll_c)
- * the parent pll is overclocked, but thats ok; we want this ;)
- * Thats not an error, so pr_err is moved after */
+		pr_err("Failed to set parent %s for %s (violates clock limit"
+		       " %lu)\n", parent->name, c->name, clk_get_max_rate(c));
 #if !IGNORE_PARENT_OVERCLOCK
-		ret = 0;
+		ret = -EINVAL;
 		goto out;
 #endif
-	pr_err("Failed to set parent %s for %s (violates clock limit"
-          " %lu)\n", parent->name, c->name, clk_get_max_rate(c));
 	}
 
 	/* The new clock control register setting does not take effect if
