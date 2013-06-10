@@ -72,7 +72,7 @@ static unsigned long target_cpu_speed[CONFIG_NR_CPUS];
 static DEFINE_MUTEX(tegra_cpu_lock);
 static bool is_suspended;
 static int suspend_index;
-static bool force_policy_max;
+static bool force_policy_max = true;
  int  gps_enable=0;
 
 static bool camera_enable = 0;
@@ -345,7 +345,7 @@ module_param_cb(enable_pwr_save, &tegra_pwr_save_ops, &pwr_save, 0644);
 	return new_speed;
 }
 
-static unsigned int cpu_user_cap;
+static unsigned int cpu_user_cap = 0;
 
 static inline void _cpu_user_cap_set_locked(void)
 {
@@ -1071,7 +1071,7 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
 	if (policy->cpu == 0) {
 		register_pm_notifier(&tegra_cpu_pm_notifier);
 	}
-
+	policy->max = 1700000;
 	return 0;
 }
 
