@@ -193,10 +193,37 @@ enum {
 
 #ifdef CONFIG_TEGRA_RUNNABLE_THREAD
 #define NR_FSHIFT	2
-static unsigned int nr_run_thresholds[] = {
+
+static unsigned int rt_profile_sel;
+
+/* avg run threads * 4 (e.g., 9 = 2.25 threads) */
+
+static unsigned int rt_profile_default[] = {
 /*      1,  2,  3,  4 - on-line cpus target */
-	5,  9, 10, UINT_MAX /* avg run threads * 4 (e.g., 9 = 2.25 threads) */
+	5,  9, 10, UINT_MAX
 };
+
+static unsigned int rt_profile_1[] = {
+/*      1,  2,  3,  4 - on-line cpus target */
+	8,  9, 10, UINT_MAX
+};
+
+static unsigned int rt_profile_2[] = {
+/*      1,  2,  3,  4 - on-line cpus target */
+	5,  13, 14, UINT_MAX
+};
+
+static unsigned int rt_profile_off[] = { /* disables runable thread */
+	0,  0,  0, UINT_MAX
+};
+
+static unsigned int *rt_profiles[] = {
+	rt_profile_default,
+	rt_profile_1,
+	rt_profile_2,
+	rt_profile_off
+};
+
 static unsigned int nr_run_hysteresis = 2;	/* 0.5 thread */
 static unsigned int nr_run_last;
 #endif
@@ -223,8 +250,9 @@ static noinline int tegra_cpu_speed_balance(void)
 	 * TEGRA_CPU_SPEED_SKEWED to remove CPU core off-line
 	 */
 
-	for (nr_run = 1; nr_run < ARRAY_SIZE(nr_run_thresholds); nr_run++) {
-		unsigned int nr_threshold = nr_run_thresholds[nr_run - 1];
+	unsigned int *current_profile = rt_profiles[rt_profile_sel];
+	for (nr_run = 1; nr_run < ARRAY_SIZE(rt_profile_default); nr_run++) {
+		unsigned int nr_threshold = current_profile[nr_run - 1];
 		if (nr_run_last <= nr_run)
 			nr_threshold += nr_run_hysteresis;
 		if (avg_nr_run <= (nr_threshold << (FSHIFT - NR_FSHIFT)))
@@ -292,7 +320,7 @@ static void tegra_auto_hotplug_work_func(struct work_struct *work)
 #ifdef CONFIG_TEGRA_RUNNABLE_THREAD
 			hotplug_wq, &hotplug_work, up2gn_delay);
 #else
-hotplug_wq, &hotplug_work, down_delay);
+			hotplug_wq, &hotplug_work, down_delay);
 #endif
 		break;
 	case TEGRA_HP_UP:
@@ -570,7 +598,26 @@ static const struct file_operations hp_stats_fops = {
 	.llseek		= seq_lseek,
 	.release	= single_release,
 };
+#ifdef CONFIG_TEGRA_RUNNABLE_THREAD
+static int rt_bias_get(void *data, u64 *val)
+{
+	*val = rt_profile_sel;
+	return 0;
+}
+static int rt_bias_set(void *data, u64 val)
+{
+	if (val < ARRAY_SIZE(rt_profiles))
+		rt_profile_sel = (u32)val;
 
+	pr_debug("rt_profile_sel set to %d\nthresholds are now [%d, %d, %d]\n",
+		rt_profile_sel,
+		rt_profiles[rt_profile_sel][0],
+		rt_profiles[rt_profile_sel][1],
+		rt_profiles[rt_profile_sel][2]);
+	return 0;
+}
+DEFINE_SIMPLE_ATTRIBUTE(rt_bias_fops, rt_bias_get, rt_bias_set, "%llu\n");
+#endif
 static int min_cpus_get(void *data, u64 *val)
 {
 	*val = pm_qos_request(PM_QOS_MIN_ONLINE_CPUS);
@@ -624,11 +671,11 @@ static int __init tegra_auto_hotplug_debug_init(void)
 	if (!debugfs_create_file(
 		"stats", S_IRUGO, hp_debugfs_root, NULL, &hp_stats_fops))
 		goto err_out;
-
+#ifdef CONFIG_TEGRA_RUNNABLE_THREAD
 	if (!debugfs_create_file(
 		"core_bias", S_IRUGO, hp_debugfs_root, NULL, &rt_bias_fops))
 		goto err_out;
-
+#endif
 	return 0;
 
 err_out:
