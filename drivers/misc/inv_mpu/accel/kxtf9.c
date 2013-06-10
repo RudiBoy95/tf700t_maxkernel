@@ -149,7 +149,7 @@ static int access_calibration_file(void)
 		offset_y = min_y + (max_y - min_y)/2;
 		offset_z = min_z + (max_z - min_z)/2;
 
-		printk("kxtf9: offset: %d %d %d\n", offset_x, offset_y, offset_z);
+		pr_debug("kxtf9: offset: %d %d %d\n", offset_x, offset_y, offset_z);
 		filp_close(fp, NULL);
 		set_fs(oldfs);
 		return 0;
@@ -371,7 +371,7 @@ static int kxtf9_suspend(void *mlsl_handle,
 	int result;
 	unsigned char data;
 	struct kxtf9_private_data *private_data = pdata->private_data;
-	printk("kxtf9: OFF +\n");
+	pr_debug("kxtf9: OFF +\n");
 	/* Wake up */
 	result = inv_serial_single_write(mlsl_handle, pdata->address,
 					 KXTF9_CTRL_REG1, 0x40);
@@ -426,7 +426,7 @@ static int kxtf9_suspend(void *mlsl_handle,
 		LOG_RESULT_LOCATION(result);
 		return result;
 	}
-	printk("kxtf9: OFF -\n");
+	pr_debug("kxtf9: OFF -\n");
 	return result;
 }
 
@@ -442,7 +442,7 @@ static int kxtf9_resume(void *mlsl_handle,
 	unsigned char data;
 	struct kxtf9_private_data *private_data = pdata->private_data;
 
-	printk("kxtf9: ON +\n");
+	pr_debug("kxtf9: ON +\n");
 	/* Wake up */
 	result = inv_serial_single_write(mlsl_handle, pdata->address,
 					 KXTF9_CTRL_REG1, 0x40);
@@ -497,7 +497,7 @@ static int kxtf9_resume(void *mlsl_handle,
 		LOG_RESULT_LOCATION(result);
 		return result;
 	}
-	printk("kxtf9: ON -\n");
+	pr_debug("kxtf9: ON -\n");
 	return INV_SUCCESS;
 }
 

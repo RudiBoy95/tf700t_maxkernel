@@ -67,7 +67,6 @@ static struct cpufreq_frequency_table *freq_table;
 static struct clk *cpu_clk;
 static struct clk *emc_clk;
 
-static bool edp_enable = 0;
 static unsigned long policy_max_speed[CONFIG_NR_CPUS];
 static unsigned long target_cpu_speed[CONFIG_NR_CPUS];
 static DEFINE_MUTEX(tegra_cpu_lock);

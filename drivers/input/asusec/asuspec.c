@@ -964,9 +964,9 @@ static int asuspec_suspend(struct i2c_client *client, pm_message_t mesg){
 }
 
 static int asuspec_resume(struct i2c_client *client){
-	printk("asuspec_resume+\n");
+	pr_debug("asuspec_resume+\n");
 	ec_chip->i2c_err_count = 0;
-	printk("asuspec_resume-\n");
+	pr_debug("asuspec_resume-\n");
 	return 0;
 }
 
