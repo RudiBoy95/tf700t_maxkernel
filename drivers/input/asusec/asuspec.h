@@ -12,7 +12,7 @@
  */
 #if ASUSPEC_DEBUG
 #define ASUSPEC_INFO(format, arg...)	\
-	pr_debug(KERN_INFO "asuspec: [%s] " format , __FUNCTION__ , ## arg)
+	printk(KERN_INFO "asuspec: [%s] " format , __FUNCTION__ , ## arg)
 #define ASUSPEC_I2C_DATA(array, i)	\
 					do {		\
 						for (i = 0; i < array[0]+1; i++) \
@@ -24,10 +24,10 @@
 #endif
 
 #define ASUSPEC_NOTICE(format, arg...)	\
-	pr_debug(KERN_NOTICE "asuspec: [%s] " format , __FUNCTION__ , ## arg)
+	printk(KERN_NOTICE "asuspec: [%s] " format , __FUNCTION__ , ## arg)
 
 #define ASUSPEC_ERR(format, arg...)	\
-	pr_debug(KERN_ERR "asuspec: [%s] " format , __FUNCTION__ , ## arg)
+	printk(KERN_ERR "asuspec: [%s] " format , __FUNCTION__ , ## arg)
 
 //-----------------------------------------
 
