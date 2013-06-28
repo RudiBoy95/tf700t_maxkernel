@@ -1393,8 +1393,7 @@ const struct fb_videomode *fb_find_nearest_mode(const struct fb_videomode *mode,
 			if (diff_refresh > d) {
 				diff_refresh = d;
 				best = cmode;
-			} else if (diff_refresh == d && cmode->vmode == mode->vmode)
-				best = cmode;
+			}
 		}
 	}
 
