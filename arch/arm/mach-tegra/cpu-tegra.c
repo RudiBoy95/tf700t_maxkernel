@@ -888,32 +888,9 @@ static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
 		unsigned int freq;
 		is_suspended = false;
 		tegra_cpu_edp_init(true);
-<<<<<<< HEAD
-		check_cpu_state();
-		tegra_cpu_set_speed_cap(&freq);
-		pr_info("Tegra cpufreq resume: restoring frequency to %d kHz\n", freq);
-		}
-		else
-		{
-		tegra_cpu_edp_init(true);
-		if(is_lp_cluster() && (!strncmp(cpu_clk->parent->name,"cpu_g",5)))
-		{
-		pr_info("Tegra cpufreq resume: cpu in LP mode, but use cpu_g  %u %s\n",is_lp_cluster(),cpu_clk->parent->name);
-		tegra_exit_lp_mode();
-		clk_set_parent(cpu_clk, cpu_lp_clk);
-		}
-		else if(!is_lp_cluster() && (!strncmp(cpu_clk->parent->name,"cpu_lp",6)))
-		{
-		pr_info("Tegra cpufreq resume: cpu in G mode, but use cpu_lp %u %s\n",is_lp_cluster(),cpu_clk->parent->name);
-		tegra_enter_lp_mode();
-		}
-		pr_info("Tegra cpufreq resume: cpu in LP mode! is_lp_cluster()=%u cpu_clk->parent->name=%s\n",is_lp_cluster(),cpu_clk->parent->name);
-		}
-=======
 		tegra_cpu_set_speed_cap(&freq);
 		pr_info("Tegra cpufreq resume: restoring frequency to %d kHz\n",
 			freq);
->>>>>>> parent of b0bb6c4... Update files to 10.6.1.14.8
 	}
 	mutex_unlock(&tegra_cpu_lock);
 
